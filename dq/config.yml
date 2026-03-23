@@ -1,0 +1,13 @@
+source_db:
+  type: postgres   # postgres / oracle / mssql
+  host: "..."
+  database: "..."
+  user: "..."
+  password: "..."
+
+dwh_db:
+  type: postgres   # postgres / oracle / mssql
+  host: "..."
+  database: "..."
+  user: "..."
+  password: "..."
