@@ -1,20 +1,17 @@
 import yaml
 import sys
+import psycopg2
 
 
-# 📌 Pourquoi YAML ?
-# → pour éviter de modifier le code à chaque projet
-# → tu changes juste config + règles
+# 📌 Lire un fichier YAML (config ou checks)
 def load_yaml(path):
     with open(path, "r") as f:
         return yaml.safe_load(f)
 
 
-# 📌 Pourquoi une fonction de connexion ?
-# → rendre le code indépendant de la base (Postgres, Oracle, etc.)
+# 📌 Connexion à la base
+# → ici Postgres (simple pour démarrer)
 def connect_db(db_config):
-    import psycopg2  # simplifié ici
-
     return psycopg2.connect(
         host=db_config["host"],
         database=db_config["database"],
@@ -23,9 +20,7 @@ def connect_db(db_config):
     )
 
 
-# 📌 Pourquoi exécuter du SQL ?
-# → on compare des données réelles (pas juste la connexion)
-# → objectif : valider que le DWH est correct
+# 📌 Exécute une requête SQL et retourne une valeur (SUM, COUNT…)
 def run_query(conn, query):
     cur = conn.cursor()
     cur.execute(query)
@@ -34,52 +29,65 @@ def run_query(conn, query):
     return result
 
 
-# 📌 Génération automatique des requêtes
-# → évite d’écrire du SQL partout
-def build_query(db_type, table, measure, where=None):
+# 📌 Génère automatiquement le SQL
+# → évite d’écrire du SQL à chaque fois
+def build_query(env, table, measure, where=None):
 
-    if db_type == "src":
-        base = f"SELECT {measure} FROM prod.{table}"
+    # convention simple :
+    # source → prod.table
+    # dwh → dwh.fact_table
+
+    if env == "src":
+        query = f"SELECT {measure} FROM prod.{table}"
     else:
-        base = f"SELECT {measure} FROM dwh.fact_{table}"
+        query = f"SELECT {measure} FROM dwh.fact_{table}"
 
+    # filtre optionnel
     if where:
-        base += f" WHERE {where}"
+        query += f" WHERE {where}"
 
-    return base
+    return query
 
 
 def main(check_file):
 
-    # 📌 1. config projet (connexions)
+    # 1️⃣ Charger config (connexions)
     config = load_yaml("dq/config.yml")
 
-    # 📌 2. règles métier (ex: ventes)
+    # 2️⃣ Charger règles métier
     checks = load_yaml(check_file)
 
-    # 📌 3. connexions aux 2 environnements
+    # 3️⃣ Connexions
     conn_src = connect_db(config["source_db"])
     conn_dwh = connect_db(config["dwh_db"])
 
-    print(f"\n🔎 Validation métier : {checks['theme']}\n")
+    print(f"\n🔎 Validation : {checks['theme']}\n")
 
+    has_error = False
+
+    # 4️⃣ Boucle sur les checks
     for check in checks["checks"]:
 
-        # 📌 on calcule les indicateurs métier
-        src_val = run_query(conn_src, build_query("src", check["table"], check["measure"]))
-        dwh_val = run_query(conn_dwh, build_query("dwh", check["table"], check["measure"]))
+        src_query = build_query("src", check["table"], check["measure"], check.get("where"))
+        dwh_query = build_query("dwh", check["table"], check["measure"], check.get("where"))
 
-        # 📌 tolérance métier (écart acceptable)
+        src_val = run_query(conn_src, src_query)
+        dwh_val = run_query(conn_dwh, dwh_query)
+
         tol = check.get("tolerance", config["defaults"]["tolerance"])
 
-        # 📌 comparaison
         if abs(src_val - dwh_val) > tol:
-            print(f"❌ {check['name']} KO → incohérence data")
+            print(f"❌ {check['name']} KO → {src_val} vs {dwh_val}")
+            has_error = True
         else:
             print(f"✅ {check['name']} OK")
 
     conn_src.close()
     conn_dwh.close()
+
+    # 📌 Important : permet de faire échouer un pipeline CI/CD ou Talaxie
+    if has_error:
+        sys.exit(1)
 
 
 if __name__ == "__main__":
