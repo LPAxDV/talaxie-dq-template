@@ -36,16 +36,17 @@ def run_query(conn, query):
 
 # 📌 Génération automatique des requêtes
 # → évite d’écrire du SQL partout
-def build_query(db_type, table, measure):
-
-    # convention projet :
-    # prod.sales
-    # dwh.fact_sales
+def build_query(db_type, table, measure, where=None):
 
     if db_type == "src":
-        return f"SELECT {measure} FROM prod.{table}"
+        base = f"SELECT {measure} FROM prod.{table}"
     else:
-        return f"SELECT {measure} FROM dwh.fact_{table}"
+        base = f"SELECT {measure} FROM dwh.fact_{table}"
+
+    if where:
+        base += f" WHERE {where}"
+
+    return base
 
 
 def main(check_file):
