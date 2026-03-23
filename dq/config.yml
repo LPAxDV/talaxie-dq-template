@@ -1,13 +1,17 @@
+# Connexion à la base source (prod)
 source_db:
-  type: postgres   # postgres / oracle / mssql
-  host: "..."
-  database: "..."
-  user: "..."
-  password: "..."
+  host: "localhost"
+  database: "prod"
+  user: "user"
+  password: "password"
 
+# Connexion au DWH (dev)
 dwh_db:
-  type: postgres   # postgres / oracle / mssql
-  host: "..."
-  database: "..."
-  user: "..."
-  password: "..."
+  host: "localhost"
+  database: "dwh"
+  user: "user"
+  password: "password"
+
+# Paramètres par défaut
+defaults:
+  tolerance: 0
