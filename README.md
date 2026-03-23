@@ -18,62 +18,98 @@ Comparer rapidement les données entre :
 ```bash
 git clone https://github.com/ton-user/talaxie-dq-template.git
 cd talaxie-dq-template
-2️⃣ Installer les dépendances
+```
+
+### 2️⃣ Installer les dépendances
+
+```bash
 pip install -r requirements.txt
+```
 
 Vérifier Python : python --version
 
-🔧 Configuration
+---
 
-👉 Fichier à modifier : dq/config.yml (connexion bdd)
+## 🔧 Configuration
 
-🧠 Définir un check métier
+👉 Fichier à modifier : **dq/config.yml (connexion bdd)**
 
-👉 Créer : dq/checks/mon_check.yml
+---
 
-Copier le template :
+## 🧠 Définir un check métier
 
-cp dq/checks/example.yml dq/checks/mon_check.yml
+👉 Créer : **dq/checks/mon_check.yml**
 
-👉 Structure : voir dq/checks/example.yml
+Copier le template : cp dq/checks/example.yml dq/checks/mon_check.yml
 
-Champs
-name : nom du test
-table : table métier (ex: sales)
-measure : agrégat SQL (SUM, COUNT…)
-tolerance : écart acceptable
-where (optionnel) : filtre SQL
-📊 Exemples
-CA
+👉 Structure : voir **dq/checks/example.yml**
+
+### Champs
+
+- **name** : nom du test
+- **table** : table métier (ex: sales)
+- **measure** : agrégat SQL (SUM, COUNT…)
+- **tolerance** : écart acceptable
+- **where** *(optionnel)* : filtre SQL
+
+---
+
+## 📊 Exemples
+
+### CA
+
+```yaml
 - name: ca
   table: sales
   measure: sum(amount)
   tolerance: 0.01
+```
 
 Compare :
 
+```sql
 SELECT sum(amount) FROM prod.sales
 SELECT sum(amount) FROM dwh.fact_sales
-Volume
+```
+
+### Volume
+
+```yaml
 - name: volume
   table: sales
   measure: count(*)
-🚀 Lancer un test
+```
+
+---
+
+## 🚀 Lancer un test
+
+```bash
 python dq/run.py dq/checks/mon_check.yml
+```
 
 👉 À lancer à la racine du projet
 
-📈 Résultat
+---
+
+## 📈 Résultat
+
+```text
 🔎 Validation : ventes
 ✅ ca OK
 ❌ volume KO → 10000 vs 9980
+```
 
 👉 Interprétation :
 
-OK → données cohérentes
-KO → problème dans le dev
-🎯 À retenir
-Modifier uniquement : dq/config.yml et dq/checks/mon_check.yml
-Ne pas toucher au code Python
-1 fichier = 1 thème métier
-1 commande = validation
+- OK → données cohérentes
+- KO → problème dans le dev
+
+---
+
+## 🎯 À retenir
+
+- Modifier uniquement : **dq/config.yml** et **dq/checks/mon_check.yml**
+- Ne pas toucher au code Python
+- 1 fichier = 1 thème métier
+- 1 commande = validation
