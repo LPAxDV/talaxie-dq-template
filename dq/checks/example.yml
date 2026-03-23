@@ -1,23 +1,24 @@
 # =========================================
-# DATA QUALITY CHECK TEMPLATE
+# TEMPLATE DATA QUALITY
+# Copier ce fichier et adapter
 # =========================================
-# Copier ce fichier et l’adapter à ton projet
 
-theme: my_theme_name
+theme: my_theme
 
 checks:
-  # Exemple 1 : chiffre d’affaires
-  - name: ca_check
+
+  # 🔹 Comparaison CA
+  - name: ca
     table: sales
     measure: sum(amount)
     tolerance: 0.01
 
-  # Exemple 2 : volume
-  - name: volume_check
+  # 🔹 Comparaison volume
+  - name: volume
     table: sales
     measure: count(*)
 
-  # Exemple 3 : avec filtre
+  # 🔹 Avec filtre (ex: données récentes)
   - name: recent_sales
     table: sales
     measure: count(*)
