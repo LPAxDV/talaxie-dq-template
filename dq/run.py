@@ -76,8 +76,12 @@ def main(check_file):
 
         tol = check.get("tolerance", config["defaults"]["tolerance"])
 
-        if abs(src_val - dwh_val) > tol:
-            print(f"❌ {check['name']} KO → {src_val} vs {dwh_val}")
+        diff = dwh_val - src_val
+        if abs(diff) > tol:
+            print(
+                f"❌ {check['name']} KO | "
+                f"SRC={src_val} | DWH={dwh_val} | DIFF={diff}"
+            )
             has_error = True
         else:
             print(f"✅ {check['name']} OK")
