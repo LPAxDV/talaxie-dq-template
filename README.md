@@ -16,7 +16,7 @@ Comparer rapidement les données entre :
 ### 1️⃣ Récupérer le projet
 
 ```bash
-git clone https://github.com/ton-user/talaxie-dq-template.git
+git clone https://github.com/LPAxDV/talaxie-dq-template.git
 cd talaxie-dq-template
 ```
 
